@@ -2,6 +2,8 @@
 
 An advanced Retrieval-Augmented Generation (RAG) pipeline designed to ingest, parse, and analyze complex financial documents (Bank Statements) using Generative AI.
 
+# System Architecture
+
 ![System Architecture](assets/architecture.png)
 
 ## 🚀 The Problem
@@ -38,6 +40,8 @@ This project implements a **Financial-Grade RAG Pipeline** that solves these iss
     ```bash
     streamlit run app.py
     ```
+# Sample screen
+![Sample screen](assets/screenshot.png)
 
 ## 📈 Future Improvements
 * **Agentic Layer:** Add a Pandas Query Engine to perform exact mathematical aggregations (Sum/Avg) rather than relying on LLM arithmetic.
