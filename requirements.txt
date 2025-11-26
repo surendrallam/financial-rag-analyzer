@@ -1,0 +1,9 @@
+llama-index
+llama-index-llms-openai
+llama-index-embeddings-openai
+pdfplumber
+streamlit
+python-dotenv
+pandas
+jupyter
+ipykernel

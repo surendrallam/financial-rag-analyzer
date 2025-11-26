@@ -1,0 +1,12 @@
+# Python vars
+__pycache__/
+*.py[cod]
+venv/
+.env
+.DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Data (Don't upload personal bank statements to GitHub!)
+data/*.pdf
