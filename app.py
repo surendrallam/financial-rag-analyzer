@@ -104,7 +104,7 @@ with st.sidebar:
     
     if uploaded_files:
         if st.button("⚡ Process Documents"):
-            with st.spinner("Processing encryption & indexing..."):
+            with st.spinner("Processing encryption & indexing (Parallel Mode)..."):
                 # 1. Create a stable temp directory
                 temp_dir = "temp_data"
                 if not os.path.exists(temp_dir):
@@ -118,14 +118,18 @@ with st.sidebar:
                         f.write(uploaded_file.getbuffer())
                     file_paths.append(path)
                 
-                # 3. Ingest
+                # 3. Ingest (From src/ingestion.py)
+                # This reads the PDFs and makes Markdown tables
                 docs = load_and_process_files(file_paths)
                 
-                # 4. Index
+                # 4. Index (From src/rag_engine.py)
+                # This runs the new Parallel Pipeline -> ChromaDB
                 index = initialize_index(docs)
+                
+                # 5. Create Engine
                 st.session_state['query_engine'] = get_query_engine(index)
                 
-                st.toast(f"✅ Indexed {len(docs)} documents successfully!", icon="🎉")
+                st.toast(f"✅ Indexed {len(docs)} documents into ChromaDB!", icon="🎉")
     
     st.markdown("---")
     

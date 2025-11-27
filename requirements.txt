@@ -2,6 +2,8 @@ llama-index
 llama-index-llms-openai
 llama-index-embeddings-openai
 llama-index-postprocessor-flag-embedding-reranker
+llama-index-vector-stores-chroma
+chromadb
 pdfplumber
 streamlit
 python-dotenv
