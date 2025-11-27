@@ -1,9 +1,9 @@
 llama-index
 llama-index-llms-openai
 llama-index-embeddings-openai
+llama-index-postprocessor-flag-embedding-reranker
 pdfplumber
 streamlit
 python-dotenv
 pandas
-jupyter
-ipykernel
+sentence-transformers

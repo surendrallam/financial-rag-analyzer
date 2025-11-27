@@ -1,68 +1,46 @@
 import pdfplumber
 from llama_index.core import Document
+import streamlit as st
+import os
 
-def pdf_to_markdown_tables(pdf_path):
+# CACHE: This function will NOT re-run if the file_refs (file names) haven't changed
+@st.cache_resource(show_spinner=False)
+def load_and_process_files(file_refs):
     """
-    Extracts text and tables from a PDF using pdfplumber.
-    Converts tables into Markdown format to preserve row/column structure
-    for the LLM.
+    Parses PDFs only once. file_refs is a list of file paths.
     """
-    documents = []
-    text_content = ""
-
-    print(f"📄 Processing: {pdf_path}")
-    
-    with pdfplumber.open(pdf_path) as pdf:
-        for page_num, page in enumerate(pdf.pages):
-            # 1. Extract Tables
-            tables = page.extract_tables()
-            
-            page_text = ""
-            
-            if tables:
-                for table in tables:
-                    # Convert list-of-lists to Markdown Table string
-                    # Filter out None values just in case
-                    clean_table = [[str(cell) if cell else "" for cell in row] for row in table]
-                    
-                    # Create Header
-                    if clean_table:
-                        header = "| " + " | ".join(clean_table[0]) + " |"
-                        separator = "| " + " | ".join(["---"] * len(clean_table[0])) + " |"
-                        body = "\n".join(["| " + " | ".join(row) + " |" for row in clean_table[1:]])
-                        
-                        markdown_table = f"\n{header}\n{separator}\n{body}\n"
-                        page_text += markdown_table
-            else:
-                # Fallback: Extract raw text if no tables found (keeps layout)
-                page_text += page.extract_text(layout=True) or ""
-
-            # Accumulate content
-            text_content += f"\n--- Page {page_num + 1} ---\n{page_text}"
-
-    # Create a single LlamaIndex Document for the whole file
-    # (or you could return one Document per page)
-    return [Document(text=text_content, metadata={"filename": pdf_path})]
-
-def load_and_parse_pdfs(data_path="./data"):
-    """
-    Iterates through the data folder and parses all PDFs.
-    """
-    import os
-    
     all_docs = []
+    print("⚡ Parsing Documents (Fresh Run)...")
     
-    # Check if directory exists
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
-        print(f"Created {data_path} folder. Please add PDFs there.")
-        return []
-
-    for filename in os.listdir(data_path):
-        if filename.endswith(".pdf"):
-            full_path = os.path.join(data_path, filename)
-            docs = pdf_to_markdown_tables(full_path)
-            all_docs.extend(docs)
+    for pdf_path in file_refs:
+        text_content = ""
+        filename = os.path.basename(pdf_path)
+        
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for page_num, page in enumerate(pdf.pages):
+                    # 1. Extract Tables to Markdown (Speed optimization: simplified logic)
+                    tables = page.extract_tables()
+                    page_text = ""
+                    
+                    if tables:
+                        for table in tables:
+                            # Fast list comp to clean None values
+                            clean_table = [[str(cell) or "" for cell in row] for row in table]
+                            if clean_table:
+                                # Quick Markdown construction
+                                header = "| " + " | ".join(clean_table[0]) + " |"
+                                separator = "| " + " | ".join(["---"] * len(clean_table[0])) + " |"
+                                body = "\n".join(["| " + " | ".join(row) + " |" for row in clean_table[1:]])
+                                page_text += f"\n{header}\n{separator}\n{body}\n"
+                    
+                    # 2. Fallback text
+                    page_text += f"\n{page.extract_text() or ''}\n"
+                    text_content += f"\n--- Page {page_num + 1} ---\n{page_text}"
             
-    print(f"✅ Successfully parsed {len(all_docs)} documents locally.")
+            all_docs.append(Document(text=text_content, metadata={"filename": filename}))
+            
+        except Exception as e:
+            print(f"Error reading {filename}: {e}")
+
     return all_docs
